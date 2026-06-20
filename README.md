@@ -57,3 +57,59 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Deployment Checklist
+
+### Before Deploying to Production
+
+1. **Environment Setup**
+   - Copy `.env.example` to `.env` and set your production values
+   - Generate a new `APP_KEY`: `php artisan key:generate`
+   - Set `APP_ENV=production`, `APP_DEBUG=false`, `LOG_LEVEL=warning`
+   - Update `APP_URL` to your production domain
+   - Configure database credentials (MySQL recommended)
+
+2. **Storage**
+   - Run `php artisan storage:link` to create the public storage symlink
+   - Ensure `storage/` directory is writable by the web server
+
+3. **Optimization**
+   ```bash
+   php artisan optimize
+   php artisan view:cache
+   php artisan event:cache
+   ```
+
+4. **Database**
+   ```bash
+   php artisan migrate --force
+   php artisan db:seed --force
+   ```
+
+5. **Queue Worker** (if using `QUEUE_CONNECTION=database`)
+   - Configure a process monitor (Supervisor) to run `php artisan queue:work`
+
+6. **Cron Job** (if using scheduled tasks)
+   Add this to your crontab:
+   ```
+   * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+   ```
+
+7. **Web Server**
+   - Point the document root to `public/`
+   - Uncomment the HTTPS redirect in `public/.htaccess`
+   - Ensure the server supports URL rewriting (mod_rewrite)
+
+8. **API Rate Limiting**
+   - API routes are rate-limited to 60 requests/minute by default
+   - Adjust in `bootstrap/app.php` if needed
+
+### Testing the Deployment
+
+```bash
+# Run the test suite before deploying
+php artisan test
+
+# Check the health endpoint
+curl https://your-domain.com/up
+```

@@ -1,0 +1,30 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Category;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
+
+/**
+ * @extends Factory<Category>
+ */
+class CategoryFactory extends Factory
+{
+    protected static array $usedNames = [];
+
+    public function definition(): array
+    {
+        $name = fake()->unique()->randomElement([
+            'Electronics', 'Clothing', 'Books', 'Home & Garden',
+            'Sports', 'Toys', 'Food & Beverages', 'Health & Beauty',
+            'Automotive', 'Music', 'Office Supplies', 'Pet Supplies',
+        ]);
+
+        return [
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'description' => fake()->sentence(),
+        ];
+    }
+}
