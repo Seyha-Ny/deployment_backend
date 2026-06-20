@@ -12,11 +12,13 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProductController extends Controller
 {
-    public function index(): AnonymousResourceCollection
+    public function index()
     {
         $products = Product::with('category')->latest()->get();
 
-        return ProductResource::collection($products);
+        return response()->json([
+            'data' => ProductResource::collection($products),
+        ]);
     }
 
     public function show(Product $product): ProductResource

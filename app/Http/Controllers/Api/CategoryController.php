@@ -8,15 +8,22 @@ use App\Http\Requests\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CategoryController extends Controller
 {
-    public function index(): AnonymousResourceCollection
+    public function index(): JsonResponse
     {
-        $categories = Category::withCount('products')->latest()->get();
+        $categories = Category::withCount('products')->latest()->paginate(10);
 
-        return CategoryResource::collection($categories);
+        return response()->json([
+            'data' => CategoryResource::collection($categories),
+            'meta' => [
+                'current_page' => $categories->currentPage(),
+                'last_page' => $categories->lastPage(),
+                'per_page' => $categories->perPage(),
+                'total' => $categories->total(),
+            ],
+        ]);
     }
 
     public function show(Category $category): CategoryResource

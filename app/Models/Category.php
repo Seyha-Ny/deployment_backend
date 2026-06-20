@@ -23,9 +23,36 @@ class Category extends Model
     {
         static::creating(function (Category $category) {
             if (empty($category->slug)) {
-                $category->slug = Str::slug($category->name);
+                $category->slug = static::makeUniqueSlug($category->name);
             }
         });
+
+        static::updating(function (Category $category) {
+            if ($category->isDirty('name') && !$category->isDirty('slug')) {
+                $category->slug = static::makeUniqueSlug($category->name, $category->id);
+            }
+        });
+    }
+
+    public static function makeUniqueSlug(string $name, ?int $ignoreId = null): string
+    {
+        $baseSlug = Str::slug($name);
+        $slug = $baseSlug;
+        $suffix = 1;
+
+        $query = static::query()
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->where('slug', $slug);
+
+        while ($query->exists()) {
+            $slug = $baseSlug . '-' . $suffix;
+            $query = static::query()
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->where('slug', $slug);
+            $suffix++;
+        }
+
+        return $slug;
     }
 
     public function products(): HasMany
